@@ -1,0 +1,946 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Gestão Alavancagem - Ivan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: cabeçalho com marca e estado de gravação; três abas (Plano, Diário, Dias); cada aba empilha painéis escuros com filete dourado, seguindo os prints de referência. */
+:root{
+  --bg:#05060b;
+  --panel:#0c0e17;
+  --panel-2:#111423;
+  --line:rgba(255,255,255,.08);
+  --line-gold:rgba(217,180,74,.28);
+  --fg:#ece8dc;
+  --mute:#8d91a6;
+  --gold:#d9b44a;
+  --gold-hi:#f3d97a;
+  --violet:#a98bff;
+  --green:#3fd47e;
+  --red:#ff5566;
+  --orange:#ff9a3c;
+  --blue:#5aa2ff;
+  --indigo:#8a8cff;
+  --crimson:#ff3b57;
+  --display:'Cinzel','Times New Roman',serif;
+  --body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:auto}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:20px 48px;
+  background-image:radial-gradient(900px 380px at 80% -10%,rgba(217,180,74,.07),transparent 70%);
+}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px;min-width:0}
+h1,h2,h3,p{margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{width:42px;height:42px;border:1px solid var(--line-gold);border-radius:11px;background:rgba(217,180,74,.07);display:grid;place-items:center;flex:none}
+.brand h1{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.04em}
+.brand p{color:var(--gold);font-size:12px;font-weight:500}
+.sync{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:7px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--mute);display:inline-block}
+.sync.ok i{background:var(--green)}
+.sync.busy i{background:var(--gold)}
+
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:10px 16px;color:var(--mute);font-weight:500;cursor:pointer;white-space:nowrap;font-family:var(--display);letter-spacing:.06em;font-size:13px;text-transform:uppercase}
+.tab[aria-selected="true"]{color:var(--gold-hi);border-bottom-color:var(--gold)}
+.tab:hover{color:var(--fg)}
+[role="tabpanel"]{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
+.panel.gold{border-color:var(--line-gold)}
+.sec{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.sec h2{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.num{width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1a1405;font-weight:700;font-size:12px;display:grid;place-items:center;flex:none}
+.sec .aside{margin-left:auto;font-size:12px;color:var(--orange)}
+.hint{color:var(--mute);font-size:12px}
+
+/* profile cards */
+.pcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.pcard{border:1px solid var(--line);border-radius:12px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;gap:3px;align-items:center;background:var(--panel-2);min-width:0}
+.pcard.ok{border-color:rgba(63,212,126,.35);background:rgba(63,212,126,.05)}
+.pcard.no{border-color:rgba(255,85,102,.35);background:rgba(255,85,102,.05)}
+.pcard .ic{font-size:22px;line-height:1.2}
+.pcard .nm{font-weight:700;font-size:12.5px}
+.pcard .ch{font-size:11px;color:var(--mute)}
+.pcard .lb{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-top:8px}
+.pcard .v{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--gold-hi)}
+.pcard .v.risk{color:var(--red);font-size:13px}
+.pcard .st{margin-top:8px;font-size:11px;padding:3px 9px;border-radius:99px}
+.pcard.ok .st{color:var(--green);background:rgba(63,212,126,.12)}
+.pcard.no .st{color:var(--red);background:rgba(255,85,102,.12)}
+.alert{margin-top:14px;border:1px solid rgba(255,85,102,.35);background:rgba(255,85,102,.06);border-radius:10px;padding:11px 14px;font-size:13px;color:#ffd5d9}
+.alert[hidden]{display:none}
+
+/* params */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.fields .full{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+label.f span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+input[type=number],input[type=date],select{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-family:var(--mono);font-size:14px;min-width:0
+}
+input:focus,select:focus{border-color:var(--gold);outline:none}
+.cta{
+  grid-column:1/-1;border:0;border-radius:12px;padding:15px;cursor:pointer;font-family:var(--display);font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:14px;color:#1a1405;
+  background:linear-gradient(90deg,#c9a23c,#f3d97a 55%,#d9b44a);box-shadow:0 6px 24px rgba(217,180,74,.25)
+}
+.cta:hover{filter:brightness(1.06)}
+.plist{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:11px 14px;cursor:pointer;min-width:0}
+.prow .ic{font-size:18px;width:26px;text-align:center;flex:none}
+.prow .tx{flex:1;min-width:0}
+.prow .nm{font-weight:700;font-size:13.5px}
+.prow .sb{font-size:11px;color:var(--mute)}
+.prow .pc{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--tone)}
+.prow[aria-pressed="true"]{border-color:var(--tone);box-shadow:0 0 0 1px var(--tone) inset}
+.tone-indigo{--tone:var(--indigo)}.tone-blue{--tone:var(--blue)}.tone-gold{--tone:var(--gold)}
+.tone-orange{--tone:var(--orange)}.tone-red{--tone:var(--red)}.tone-crimson{--tone:var(--crimson)}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tile{border:1px solid var(--line);border-radius:16px;padding:20px 14px;text-align:center;background:var(--panel);min-width:0}
+.tile.g{border-color:var(--line-gold);background:rgba(217,180,74,.04)}
+.tile.v{border-color:rgba(169,139,255,.3);background:rgba(169,139,255,.04)}
+.tile .lb{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.tile .big{font-family:var(--mono);font-weight:700;font-size:44px;line-height:1.15;margin:4px 0}
+.tile.g .big{color:var(--gold)}.tile.v .big{color:var(--violet)}
+.tile .sm{font-size:11px;color:var(--mute)}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:16px 0}
+.strip>div{text-align:center;padding:0 10px;border-left:1px solid var(--line);min-width:0}
+.strip>div:first-child{border-left:0}
+.strip .lb{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.strip .v{font-family:var(--mono);font-weight:700;font-size:26px;color:var(--violet)}
+.strip .sm{font-size:11px;color:var(--mute)}
+
+/* tables */
+.tw{overflow:auto;max-height:380px;border-radius:10px}
+.tw.tall{max-height:460px}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font-family:var(--body);font-weight:500;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding:9px 12px;white-space:nowrap;z-index:1}
+td{padding:9px 12px;border-top:1px solid var(--line);white-space:nowrap}
+td.g{color:var(--gold-hi)}td.p{color:var(--green)}td.n{color:var(--red)}td.m{color:var(--mute)}
+tr.limit td{background:rgba(255,85,102,.07);color:var(--red)}
+tr.goal td{background:rgba(63,212,126,.07)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .ax{fill:var(--mute);font-family:var(--mono);font-size:10.5px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:8px}
+.legend b{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* diary */
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel);min-width:0}
+.stat .lb{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.stat .v{font-family:var(--mono);font-weight:700;font-size:22px;margin-top:2px}
+.stat .sm{font-size:11px;color:var(--mute)}
+.pos{color:var(--green)}.neg{color:var(--red)}.gd{color:var(--gold-hi)}
+.bar{height:8px;border-radius:99px;background:var(--panel-2);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#c9a23c,#f3d97a);border-radius:99px}
+.sugg{display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:1px dashed var(--line-gold);border-radius:12px;padding:12px 14px;margin-bottom:16px;background:rgba(217,180,74,.04)}
+.sugg .tx{flex:1;min-width:200px}
+.sugg strong{font-family:var(--mono);color:var(--gold-hi)}
+.btn{border:1px solid var(--line-gold);background:transparent;color:var(--gold-hi);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:500}
+.btn:hover{background:rgba(217,180,74,.1)}
+.btn.danger{border-color:rgba(255,85,102,.4);color:var(--red)}
+.btn.danger:hover{background:rgba(255,85,102,.1)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel-2)}
+.seg label{cursor:pointer;text-align:center;padding:11px 6px;font-size:13px;font-weight:500;color:var(--mute)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked+span{color:var(--fg)}
+.seg label:has(input:checked){background:rgba(217,180,74,.14);color:var(--gold-hi)}
+.seg label:has(input[value=win]:checked){background:rgba(63,212,126,.16);color:var(--green)}
+.seg label:has(input[value=loss]:checked){background:rgba(255,85,102,.16);color:var(--red)}
+.seg label:has(input:focus-visible){outline:2px solid var(--gold-hi);outline-offset:-2px}
+.xbtn{background:none;border:0;color:var(--mute);cursor:pointer;font-size:16px;padding:2px 8px;border-radius:6px}
+.xbtn:hover{color:var(--red);background:rgba(255,85,102,.1)}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-family:var(--body);font-size:11px;font-weight:500}
+.pill.ok{background:rgba(63,212,126,.14);color:var(--green)}
+.pill.no{background:rgba(255,85,102,.14);color:var(--red)}
+.pill.mid{background:rgba(255,255,255,.07);color:var(--mute)}
+.empty{padding:26px 10px;text-align:center;color:var(--mute);font-size:13px}
+.foot{font-size:12px;color:var(--mute);margin-top:12px}
+/* live session (diário) */
+.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line-gold);border-radius:16px;background:var(--panel);padding:18px 0}
+.hud>div{padding:0 20px;border-left:1px solid var(--line);min-width:0}
+.hud>div:first-child{border-left:0}
+.hud .lb{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.hud .v{font-family:var(--mono);font-weight:700;font-size:23px;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hud .sm{font-size:11px;color:var(--mute)}
+.hud input{width:100%;max-width:170px;padding:7px 10px;font-size:18px}
+.hud .sep{color:var(--mute);font-weight:400}
+.live{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.entry{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;border:1px solid var(--line-gold);border-radius:14px;background:var(--panel-2);padding:16px 18px;margin-bottom:14px}
+.entry .lb{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.entry .amt{font-family:var(--mono);font-weight:700;font-size:38px;color:var(--gold-hi);line-height:1.15}
+.entry .side{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.badge{border:1px solid var(--line-gold);background:rgba(217,180,74,.1);color:var(--gold-hi);border-radius:8px;padding:5px 11px;font-family:var(--mono);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+.entry.stop{border-color:rgba(255,85,102,.4);background:rgba(255,85,102,.06);color:#ffd5d9;font-size:13.5px}
+.wl{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wl button{border:0;border-radius:14px;padding:16px 10px;cursor:pointer;color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px}
+.wl b{font-family:var(--display);letter-spacing:.14em;font-size:16px;display:flex;align-items:center;gap:8px}
+.wl span{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.9)}
+.wl .win{background:linear-gradient(180deg,#12793c,#178a46)}
+.wl .loss{background:linear-gradient(180deg,#a1202b,#c1272f)}
+.wl button:hover:not(:disabled){filter:brightness(1.12)}
+.wl button:disabled{opacity:.3;cursor:not-allowed}
+.ghostrow{display:flex;gap:8px;margin:12px 0 18px;flex-wrap:wrap}
+.ghost{flex:1;min-width:130px;background:transparent;border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--mute);cursor:pointer;display:flex;gap:8px;align-items:center;justify-content:center;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase}
+.ghost:hover{color:var(--fg);border-color:var(--line-gold)}
+.ghost:disabled{opacity:.35;cursor:not-allowed}
+.sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+tr.now td{background:rgba(217,180,74,.09);color:var(--gold-hi)}
+td.st-now{color:var(--gold-hi);font-weight:600}
+td.st-wait{color:var(--mute);font-family:var(--body)}
+td.st-loss{color:var(--red);font-family:var(--body)}
+.mhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mrow{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.mrow label{font-size:12px;color:var(--mute)}
+.mrow input{width:84px;padding:8px 10px}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mini.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.mini>div{border:1px solid var(--line);border-radius:12px;padding:12px 6px;text-align:center;background:var(--panel-2);min-width:0}
+.mini .lb{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.mini .v{font-family:var(--mono);font-weight:700;font-size:20px;margin-top:2px}
+.mprog{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute);margin-top:14px}
+.paramgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ghost.sm{flex:none;min-width:0;padding:8px 14px}
+.banner{display:flex;gap:16px;align-items:center;border:1px solid rgba(63,212,126,.45);background:linear-gradient(90deg,rgba(63,212,126,.12),rgba(217,180,74,.08));border-radius:16px;padding:18px 20px}
+.banner[hidden]{display:none}
+.banner.info{border-color:var(--line-gold);background:rgba(217,180,74,.06)}
+.banner .bi{width:46px;height:46px;border-radius:50%;background:rgba(63,212,126,.16);color:var(--green);display:grid;place-items:center;flex:none}
+.banner.info .bi{background:rgba(217,180,74,.14);color:var(--gold-hi)}
+.banner h3{font-family:var(--display);font-size:17px;letter-spacing:.05em;color:var(--fg)}
+.banner p{color:var(--mute);font-size:13px;margin-top:2px}
+.banner p b{color:var(--fg);font-weight:500}
+.entry.done{border-color:rgba(63,212,126,.4);background:rgba(63,212,126,.06);color:#d6f5e3;font-size:13.5px}
+.cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px}
+.dd{border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;background:var(--panel-2);min-width:0}
+.dd .dn{font-weight:700;font-size:12.5px}
+.dd .dt{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.dd .dc{font-family:var(--mono);font-weight:700;font-size:17px;margin:4px 0 2px}
+.dd .ds{font-size:10.5px;color:var(--mute)}
+.dd-ok{border-color:rgba(63,212,126,.4);background:rgba(63,212,126,.07)}
+.dd-ok .dc,.dd-ok .ds{color:var(--green)}
+.dd-today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.dd-today .dc,.dd-today .ds{color:var(--gold-hi)}
+.dd-miss{border-color:rgba(255,85,102,.35);background:rgba(255,85,102,.05)}
+.dd-miss .dc,.dd-miss .ds{color:var(--red)}
+.dd-fut{opacity:.75}
+@media (max-width:900px){
+  .hud{grid-template-columns:1fr 1fr;row-gap:16px}
+  .hud>div:nth-child(3){border-left:0}
+  .live{grid-template-columns:1fr}
+}
+@media (max-width:420px){
+  .hud{grid-template-columns:1fr}
+  .hud>div{border-left:0}
+  .mini.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .entry .amt{font-size:32px}
+}
+@media (max-width:760px){
+  .two,.split{grid-template-columns:1fr}
+  .tile .big{font-size:36px}
+  .strip .v{font-size:20px}
+}
+@media (max-width:420px){
+  .fields{grid-template-columns:1fr}
+  .tiles{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){
+  .cta,.btn,.prow{transition:filter .15s,background .15s,border-color .15s}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d9b44a" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/></svg>
+      </div>
+      <div><h1>Gestão Alavancagem - Ivan</h1><p>Alavancagem por ciclos · day trade</p></div>
+    </div>
+    <div class="sync" id="sync" role="status"><i></i><span>Carregando…</span></div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Seções">
+    <button class="tab" role="tab" id="t-plano" aria-controls="p-plano" aria-selected="true" data-tab="plano">Plano</button>
+    <button class="tab" role="tab" id="t-diario" aria-controls="p-diario" aria-selected="false" data-tab="diario">Diário</button>
+    <button class="tab" role="tab" id="t-dias" aria-controls="p-dias" aria-selected="false" data-tab="dias">Dias</button>
+  </nav>
+
+  <!-- PLANO -->
+  <section role="tabpanel" id="p-plano" aria-labelledby="t-plano">
+    <div class="panel gold">
+      <div class="sec"><span class="num">1</span><h2>Capital mínimo por perfil</h2><span class="aside">Operar com payout mínimo de 80%</span></div>
+      <div class="pcards" id="pcards"></div>
+      <div class="alert" id="alert" hidden></div>
+    </div>
+
+    <div class="panel gold">
+      <div class="two">
+        <div>
+          <div class="sec"><span class="num">2</span><h2>Parâmetros</h2></div>
+          <div class="fields">
+            <label class="f full"><span>Capital disponível a arriscar (R$)</span><input type="number" id="in-capital" step="any" min="0" inputmode="decimal"></label>
+            <label class="f"><span>Payout (%)</span><input type="number" id="in-payout" step="any" min="1" max="100" inputmode="decimal"></label>
+            <label class="f"><span>Objetivo final (R$)</span><input type="number" id="in-objetivo" step="any" min="0" inputmode="decimal"></label>
+            <label class="f"><span>Em quantos dias?</span><input type="number" id="in-dias" step="1" min="1" inputmode="numeric"></label>
+            <label class="f"><span>Entrada mínima (R$)</span><input type="number" id="in-min" step="any" min="1" inputmode="decimal"></label>
+            <label class="f full"><span>Data de início</span><input type="date" id="in-inicio"></label>
+            <label class="f full"><span>Modo do soro</span><select id="in-modo"><option value="livre">Livre · 2 wins em qualquer ordem</option><option value="seq">Sequência · win-win seguido</option></select></label>
+            <button class="cta" id="btn-start" type="button">Iniciar agora</button>
+          </div>
+        </div>
+        <div>
+          <div class="sec"><span class="num">3</span><h2>Selecione o perfil</h2></div>
+          <div class="plist" id="plist"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile g"><div class="lb">Chances até quebrar</div><div class="big" id="s-chances">–</div><div class="sm" id="s-unit">chances disponíveis</div><div class="sm" id="s-obj-sessao"></div><div class="sm" id="s-prob" style="margin-top:6px"></div></div>
+      <div class="tile v"><div class="lb">Sessões para o objetivo</div><div class="big" id="s-sessoes">–</div><div class="sm">sessões Win-Win</div><div class="sm" id="s-obj"></div></div>
+    </div>
+    <div class="strip">
+      <div><div class="lb">Total de sessões</div><div class="v" id="s-total">–</div><div class="sm">sessões Win-Win</div></div>
+      <div><div class="lb">Prazo escolhido</div><div class="v" id="s-prazo">–</div><div class="sm">dias</div></div>
+      <div><div class="lb">Sessões por dia</div><div class="v" id="s-spd">–</div><div class="sm">sessões/dia</div></div>
+    </div>
+
+    <div class="split">
+      <div class="panel">
+        <div class="sec"><h2>Tabela de soros</h2><span class="hint" id="soros-hint"></span></div>
+        <div class="tw"><table><thead><tr id="soros-head"><th>Soro</th><th>E1</th><th>E2</th><th>Lucro WW</th><th>Risco acum.</th></tr></thead><tbody id="soros-body"></tbody></table></div>
+      </div>
+      <div class="panel chart">
+        <div class="sec"><h2>Projeção de capital</h2></div>
+        <div id="chart-plan"></div>
+        <div class="legend"><span><b style="background:var(--gold)"></b>Capital projetado</span><span><b style="background:var(--green)"></b>Meta</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="sec"><h2>Progressão do capital · sessão a sessão</h2><span class="hint" id="prog-hint"></span></div>
+      <div class="tw tall"><table><thead><tr><th>Sessão</th><th>Capital inicial</th><th>Objetivo</th><th>Entrada E1</th><th>Entrada E2</th><th>Lucro Win-Win</th><th>Capital final</th><th>Crescimento</th></tr></thead><tbody id="prog-body"></tbody></table></div>
+      <p class="foot">A projeção supõe fechar cada ciclo nos dois primeiros acertos (E1 e E2), com juros compostos recalculados a cada sessão. A taxa de acerto usada na comparação de chances é calculada sozinha e não é uma previsão. O que de fato aconteceu fica no Diário.</p>
+    </div>
+  </section>
+
+  <!-- DIÁRIO -->
+  <section role="tabpanel" id="p-diario" aria-labelledby="t-diario" hidden>
+    <div class="banner" id="daybanner" hidden></div>
+    <div class="hud" id="hud"></div>
+
+    <div class="live">
+      <div class="panel gold">
+        <div class="sec"><h2>Próxima entrada</h2></div>
+        <div id="cycle"></div>
+      </div>
+
+      <div class="stack">
+        <div class="panel gold">
+          <div class="sec"><h2>Meta total do dia</h2><span class="hint" style="margin-left:auto" id="m-date"></span></div>
+          <div class="mrow">
+            <span>Meta de sessões/dia:</span>
+            <strong class="gd" id="in-meta" style="font-family:var(--mono);font-size:18px"></strong>
+            <span class="hint">definida no Plano (sessões por dia)</span>
+          </div>
+          <div class="mini">
+            <div><div class="lb">Concluídas</div><div class="v pos" id="m-conc">0</div></div>
+            <div><div class="lb">Restantes</div><div class="v" style="color:var(--orange)" id="m-rest">0</div></div>
+            <div><div class="lb">Meta</div><div class="v gd" id="m-meta">0</div></div>
+          </div>
+          <div class="bar"><i id="m-bar" style="width:0%"></i></div>
+          <div class="mprog"><span id="m-txt"></span><span class="gd" id="m-pct">0%</span></div>
+          <p class="hint" style="margin-top:10px" id="m-days"></p>
+        </div>
+
+        <div class="panel">
+          <div class="sec"><h2>Performance do ciclo</h2></div>
+          <div class="mini four">
+            <div><div class="lb" id="pf-lbl">Soro</div><div class="v gd" id="pf-soro">–</div></div>
+            <div><div class="lb">Wins</div><div class="v pos" id="pf-w">0</div></div>
+            <div><div class="lb">Losses</div><div class="v neg" id="pf-l">0</div></div>
+            <div><div class="lb">Objetivo</div><div class="v gd" id="pf-obj" style="font-size:16px">–</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="panel chart">
+        <div class="sec"><h2>Real × projetado</h2></div>
+        <div id="chart-real"></div>
+        <div class="legend"><span><b style="background:var(--gold)"></b>Projetado</span><span><b style="background:var(--green)"></b>Real</span></div>
+      </div>
+      <div class="panel">
+        <div class="sec"><h2>Operações</h2><button class="btn danger" id="btn-reset" type="button" style="margin-left:auto">Zerar diário</button></div>
+        <div class="tw"><table><thead><tr><th>Data</th><th>Etapa</th><th>Entrada</th><th>Resultado</th><th>R$</th><th>Capital</th><th></th></tr></thead><tbody id="ops-body"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+<!-- DIAS -->
+  <section role="tabpanel" id="p-dias" aria-labelledby="t-dias" hidden>
+    <div class="panel gold">
+      <div class="sec"><h2>Plano de dias</h2><span class="hint" id="cal-hint"></span></div>
+      <div class="cal" id="cal"></div>
+    </div>
+    <div class="panel gold">
+      <div class="sec"><h2>Resumo por dia</h2><span class="hint" id="dias-hint"></span></div>
+      <div class="tw tall"><table><thead><tr><th>Data</th><th>Operações</th><th>Win</th><th>Loss</th><th>Resultado</th><th>Capital final</th><th>Meta do dia</th><th>Situação</th></tr></thead><tbody id="dias-body"></tbody></table></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var PROFILES=[
+ {id:'ultra',nome:'Ultra Conservador',sub:'Proteção máxima',pct:0.005,icon:'🏛',tone:'indigo'},
+ {id:'cons',nome:'Conservador',sub:'Máxima proteção',pct:0.01,icon:'🛡',tone:'blue'},
+ {id:'mod',nome:'Moderado',sub:'Equilíbrio risco/retorno',pct:0.02,icon:'⚖',tone:'gold'},
+ {id:'agr',nome:'Agressivo',sub:'Alto retorno, risco elevado',pct:0.03,icon:'⚡',tone:'orange'},
+ {id:'ultra-agr',nome:'Ultra Agressivo',sub:'Máximo retorno, risco máximo',pct:0.05,icon:'🔥',tone:'red'},
+ {id:'hard',nome:'Nível Hard',sub:'Alto risco, alta recompensa',pct:0.10,icon:'💀',tone:'crimson'}
+];
+var BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+function brl(n){return BRL.format(n).replace(/ /g,' ')}
+function pcFmt(p){return (p*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}
+function signed(n){return (n>=0?'+':'−')+brl(Math.abs(n))}
+function r2(x){return Math.round(x*100)/100}
+function cei(x){return Math.ceil(x-1e-9)}
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseDay(s){var a=(s||'').split('-');return new Date(+a[0],(+a[1])-1,+a[2])}
+function dayDiff(a,b){return Math.round((parseDay(b)-parseDay(a))/86400000)}
+function fmtDay(s){var a=(s||'').split('-');return a.length===3?a[2]+'/'+a[1]:s}
+function addDays(s,n){var d=parseDay(s);d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function uid(){return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2)}
+function prof(id){return PROFILES.filter(function(p){return p.id===id})[0]||PROFILES[2]}
+
+/* ---------- cálculo ---------- */
+// Cada soro tem E1 crescente; E2 = E1 × (1 + payout); o lucro Win-Win líquido de cada soro
+// é constante: (E1 + E2) × payout − risco acumulado anterior. Dali sai o fator r.
+function factor(p){return 1+1/((2+p)*p)}
+function chain(e1, r, cap, maxN){
+  var out=[],cum=0,n;
+  for(n=0;n<(maxN||80);n++){
+    var raw=e1*Math.pow(r,n), v=cei(raw);
+    if(cum+v>cap) break;
+    cum+=v; out.push({raw:raw,v:v,cum:cum});
+  }
+  return out;
+}
+function minDeposit(pct,min){return cei(min/pct)}
+// Modo livre: cada chance cresce ×(1+1/payout); chance 1 = a, chance 2 = a(1+payout).
+function chainL(a,p,cap,maxN){
+  var out=[],cum=0,n,g=1+1/p;
+  for(n=0;n<(maxN||40);n++){
+    var raw=n===0?a:a*(1+p)*Math.pow(g,n-1),v=cei(raw);
+    if(cum+v>cap)break;
+    cum+=v;out.push({raw:raw,v:v,cum:cum});
+  }
+  return out;
+}
+function chainFor(cfg,a,cap){var p=cfg.payout/100;return cfg.modo==='seq'?chain(a,factor(p),cap):chainL(a,p,cap)}
+function probSeq(q,N){return N<1?0:1-Math.pow(1-q*q,N)}
+function probLivre(q,N){return N<2?0:1-Math.pow(1-q,N)-N*q*Math.pow(1-q,N-1)}
+function profileCard(pf,cfg){
+  var p=cfg.payout/100,r=factor(p);
+  var dep=minDeposit(pf.pct,cfg.minEntrada);
+  var e1=Math.max(cfg.minEntrada,cei(dep*pf.pct));
+  var ch=chainFor(cfg,e1,dep);
+  return {dep:dep,chances:ch.length,risk:ch.length?ch[ch.length-1].cum:0,ok:cfg.capital>=dep};
+}
+function plan(cfg){
+  var p=cfg.payout/100,r=factor(p),pf=prof(cfg.perfil);
+  var e1_0=Math.max(cfg.minEntrada,cei(cfg.capital*pf.pct));
+  var ch=chainFor(cfg,e1_0,cfg.capital);
+  var soros=[],cumRaw=0,i;
+  for(i=0;i<ch.length;i++){
+    if(cfg.modo==='seq'){
+      var raw=e1_0*Math.pow(r,i),e2=raw*(1+p);
+      var lucro=(raw+e2)*p-cumRaw;
+      cumRaw+=raw;
+      soros.push({n:i+1,e1:raw,e2:e2,lucro:lucro,risco:cumRaw});
+    }else{
+      cumRaw+=ch[i].raw;
+      soros.push({n:i+1,e:ch[i].raw,risco:cumRaw});
+    }
+  }
+  var base=cumRaw||e1_0;
+  var rows=[],cap=cfg.capital,s=0,reach=cfg.objetivo<=cfg.capital;
+  if(!reach){
+    while(s<1500){
+      s++;
+      var a=Math.max(cfg.minEntrada,cei(cap*pf.pct)),b=cei(a*(1+p));
+      var luc=r2((a+b)*p),fin=r2(cap+luc);
+      rows.push({s:s,cap:cap,e1:a,e2:b,luc:luc,fin:fin,cres:fin/base-1});
+      cap=fin;
+      if(fin>=cfg.objetivo){reach=true;break}
+    }
+  }
+  return {p:p,r:r,g:1+1/p,pf:pf,e1_0:e1_0,chances:ch.length,nSeq:chain(e1_0,r,cfg.capital).length,nLivre:chainL(e1_0,p,cfg.capital).length,soros:soros,base:base,rows:rows,reach:reach,
+          objSessao:e1_0*(2+p)*p,spd:rows.length?Math.ceil(rows.length/Math.max(1,cfg.dias)):0,
+          dep:minDeposit(pf.pct,cfg.minEntrada)};
+}
+// Dois modos de ciclo.
+// Sequência: cada soro tem E1 e E2; é preciso ganhar os dois seguidos, senão sobe um soro.
+// Livre: cada entrada é uma chance; o ciclo fecha no 2º win, em qualquer posição, com lucro mínimo garantido.
+function newCyc(cap){return {start:cap,soro:1,fase:'E1',w:0,l:0,k:0,wins:0,P:0,hist:[]}}
+function real(cfg,ops){
+  var cap=cfg.capital,rows=[],done=[],curve=[cfg.capital];
+  var cyc=newCyc(cap);
+  ops.forEach(function(o,idx){
+    if(o.kind==='reset'){cyc=newCyc(cap);return}
+    var v=+o.valor||0,po=(+o.payout||cfg.payout)/100;
+    var x=o.res==='win'?r2(v*po):(o.res==='loss'?-v:0);
+    cap=r2(cap+x);
+    rows.push({o:o,pl:x,cap:cap,i:idx,soro:cyc.soro});
+    if(o.res==='win')cyc.w++;else if(o.res==='loss')cyc.l++;
+    if(o.res==='draw')return;
+    if(o.modo==='livre'){
+      cyc.k++;cyc.P=r2(cyc.P+x);cyc.hist.push({v:v,res:o.res});
+      if(o.res==='win'){
+        cyc.wins++;
+        if(cyc.wins>=2){done.push({d:o.data,i:idx});curve.push(cap);cyc=newCyc(cap)}
+      }
+      return;
+    }
+    if(o.etapa==='E1'){
+      if(o.res==='win')cyc.fase='E2';else{cyc.soro++;cyc.fase='E1'}
+    }else{
+      if(o.res==='win'){done.push({d:o.data,i:idx});curve.push(cap);cyc=newCyc(cap)}
+      else{cyc.soro++;cyc.fase='E1'}
+    }
+  });
+  if(curve[curve.length-1]!==cap)curve.push(cap);
+  var wins=0,losses=0;
+  rows.forEach(function(x){if(x.o.res==='win')wins++;else if(x.o.res==='loss')losses++});
+  return {rows:rows,cap:cap,cyc:cyc,done:done,curve:curve,wins:wins,losses:losses};
+}
+// Tabela do modo sequência, fixa a partir do capital no início do ciclo.
+function cycleTable(cfg,start){
+  var p=cfg.payout/100,r=factor(p),pf=prof(cfg.perfil);
+  var e1=Math.max(cfg.minEntrada,cei(start*pf.pct));
+  var ch=chain(e1,r,start);
+  return {rows:ch.map(function(c){return {e1:c.v,e2:cei(c.v*(1+p))}}),obj:e1*(2+p)*p,pf:pf,p:p};
+}
+// Tabela do modo livre: e_1 = a, e_2 = a(1+p), depois ×(1+1/p). Com qualquer par de wins o lucro fecha em pelo menos obj.
+function cycleTableL(cfg,start){
+  var p=cfg.payout/100,pf=prof(cfg.perfil);
+  var a=Math.max(cfg.minEntrada,cei(start*pf.pct));
+  return {rows:chainL(a,p,start),obj:a*(2+p)*p,a:a,p:p,pf:pf,min:cfg.minEntrada};
+}
+// Próxima entrada: sem win ainda, segue a tabela; com 1 win, o valor que fecha o ciclo no obj ao acertar.
+function sizeL(tb,wins,P,i){
+  if(wins===0)return tb.rows[i]?tb.rows[i].v:0;
+  return Math.max(tb.min,cei((tb.obj-P)/tb.p));
+}
+function nextL(tb,cyc){
+  if(cyc.k>=tb.rows.length)return 0;
+  return sizeL(tb,cyc.wins,cyc.P,cyc.k);
+}
+// Linhas da tabela do ciclo: entradas já feitas, a atual e a previsão supondo losses daqui em diante.
+function listL(tb,cyc,N){
+  var out=[],Pf=cyc.P,i,e;
+  for(i=0;i<N;i++){
+    if(i<cyc.k){out.push({kind:'past',v:cyc.hist[i].v,res:cyc.hist[i].res});continue}
+    e=sizeL(tb,cyc.wins,Pf,i);
+    out.push({kind:i===cyc.k?'now':'next',v:e});
+    Pf=r2(Pf-e);
+  }
+  return out;
+}
+
+/* ---------- estado e gravação ---------- */
+var S={cfg:{capital:250,payout:82,objetivo:5000,dias:30,perfil:'mod',minEntrada:5,inicio:todayStr(),modo:'livre'},ops:[],updated:0};
+var docRef=null,saveTimer=null,saving=false,pending=false,syncState='local';
+var LS='gestao-soros-v1';
+function setSync(st){
+  syncState=st;var el=$('#sync');if(!el)return;
+  el.className='sync '+(st==='cloud'?'ok':(st==='busy'?'busy':''));
+  el.querySelector('span').textContent=st==='cloud'?'Salvo na sua conta':(st==='busy'?'Salvando…':'Salvo neste navegador');
+}
+function lsRead(){try{var t=localStorage.getItem(LS);return t?JSON.parse(t):null}catch(e){return null}}
+function lsWrite(d){try{localStorage.setItem(LS,JSON.stringify(d))}catch(e){}}
+function snapshot(){S.updated=Date.now();return {cfg:S.cfg,ops:S.ops,updated:S.updated}}
+function persist(){
+  lsWrite(snapshot());
+  if(!docRef){setSync('local');return}
+  setSync('busy');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(flush,700);
+}
+async function flush(){
+  if(saving){pending=true;return}
+  saving=true;
+  try{
+    await docRef.set(snapshot());
+    setSync('cloud');
+  }catch(e){setSync('local')}
+  saving=false;
+  if(pending){pending=false;flush()}
+}
+function adopt(d){
+  if(!d||typeof d!=='object')return;
+  if(d.cfg)S.cfg=Object.assign({},S.cfg,d.cfg);
+  if(Array.isArray(d.ops))S.ops=d.ops;
+  if(d.cfg&&!d.cfg.modo&&S.ops.length&&S.ops[S.ops.length-1].kind!=='reset')S.ops.push({id:uid(),kind:'reset',data:todayStr()});
+  S.updated=d.updated||0;
+}
+async function initStore(){
+  var loc=lsRead();
+  if(loc){adopt(loc)}
+  renderAll();
+  setSync('local');
+  try{
+    if(!window.claude||!claude.use)return;
+    var dbm=await claude.use('db'),user=await claude.use('user');
+    if(!dbm||!user)return;
+    var id=await user.id();
+    if(!id)return;
+    docRef=dbm.doc('data/users/'+id+'/app');
+    var snap=await Promise.race([docRef.get(),new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'))},10000)})]);
+    var remote=snap.exists?snap.data():null;
+    if(remote&&(remote.updated||0)>=(S.updated||0)){adopt(remote);lsWrite(snapshot());renderAll();setSync('cloud')}
+    else if(loc||!remote){await docRef.set(snapshot());setSync('cloud')}
+  }catch(e){docRef=null;setSync('local')}
+}
+
+/* ---------- gráfico ---------- */
+function kfmt(v){return v>=1000?'R$ '+(v/1000).toFixed(v>=10000?0:1).replace('.',',')+'k':'R$ '+Math.round(v)}
+function chartSVG(proj,real,cfg){
+  var W=640,H=280,L=62,R=22,T=16,B=34,iw=W-L-R,ih=H-T-B;
+  var N=Math.max(proj.length,real.length-1,1);
+  var ys=[cfg.capital,cfg.objetivo];
+  proj.forEach(function(r){ys.push(r.fin)});real.forEach(function(v){ys.push(v)});
+  var lo=Math.min.apply(null,ys),hi=Math.max.apply(null,ys);
+  if(hi-lo<1){hi=lo+1}
+  var pad=(hi-lo)*0.06;lo=Math.max(0,lo-pad);hi=hi+pad;
+  function X(i){return L+iw*(i/N)}
+  function Y(v){return T+ih*(1-(v-lo)/(hi-lo))}
+  var g='',i,t;
+  for(i=0;i<=4;i++){
+    var v=lo+(hi-lo)*i/4,y=Y(v);
+    g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="rgba(255,255,255,.07)" stroke-width="1"/>';
+    g+='<text class="ax" x="'+(L-8)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end">'+kfmt(v)+'</text>';
+  }
+  for(i=0;i<=4;i++){
+    t=Math.round(N*i/4);
+    g+='<text class="ax" x="'+X(t).toFixed(1)+'" y="'+(H-12)+'" text-anchor="middle">'+t+'</text>';
+  }
+  var gy=Y(cfg.objetivo);
+  g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+gy.toFixed(1)+'" y2="'+gy.toFixed(1)+'" stroke="#3fd47e" stroke-width="1.2" stroke-dasharray="5 4"/>';
+  g+='<text class="ax" x="'+(W-R)+'" y="'+(gy-6).toFixed(1)+'" text-anchor="end" style="fill:#3fd47e">Meta '+kfmt(cfg.objetivo)+'</text>';
+  var pts=[[0,cfg.capital]];proj.forEach(function(r,k){pts.push([k+1,r.fin])});
+  if(pts.length>1){
+    var d=pts.map(function(p,k){return (k?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)}).join(' ');
+    var area=d+' L'+X(pts[pts.length-1][0]).toFixed(1)+' '+(T+ih)+' L'+X(0).toFixed(1)+' '+(T+ih)+' Z';
+    g='<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b44a" stop-opacity=".28"/><stop offset="1" stop-color="#d9b44a" stop-opacity="0"/></linearGradient></defs>'+g;
+    g+='<path d="'+area+'" fill="url(#ga)" stroke="none"/>';
+    g+='<path d="'+d+'" fill="none" stroke="#d9b44a" stroke-width="2" stroke-linejoin="round"/>';
+    var lp=pts[pts.length-1];
+    g+='<circle cx="'+X(lp[0]).toFixed(1)+'" cy="'+Y(lp[1]).toFixed(1)+'" r="4.5" fill="#05060b" stroke="#d9b44a" stroke-width="2"/>';
+  }
+  if(real.length>1){
+    var d2=real.map(function(v,k){return (k?'L':'M')+X(k).toFixed(1)+' '+Y(v).toFixed(1)}).join(' ');
+    g+='<path d="'+d2+'" fill="none" stroke="#3fd47e" stroke-width="2.2" stroke-linejoin="round"/>';
+    var le=real.length-1;
+    g+='<circle cx="'+X(le).toFixed(1)+'" cy="'+Y(real[le]).toFixed(1)+'" r="4.5" fill="#05060b" stroke="#3fd47e" stroke-width="2"/>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Gráfico de capital por sessão">'+g+'</svg>';
+}
+
+/* ---------- renderização ---------- */
+var tab='plano';
+function renderCards(cfg){
+  $('#pcards').innerHTML=PROFILES.map(function(pf){
+    var c=profileCard(pf,cfg);
+    return '<div class="pcard '+(c.ok?'ok':'no')+'"><div class="ic" aria-hidden="true">'+pf.icon+'</div>'+
+      '<div class="nm">'+pf.nome+' · '+pcFmt(pf.pct)+'</div><div class="ch">'+c.chances+' chances até quebrar</div>'+
+      '<div class="lb">Depositar</div><div class="v">'+brl(c.dep)+'</div>'+
+      '<div class="lb">Risco real</div><div class="v risk">'+brl(c.risk)+'</div>'+
+      '<div class="st">'+(c.ok?'✓ Capital suficiente':'✗ Capital insuficiente')+'</div></div>';
+  }).join('');
+}
+function renderPlan(){
+  var cfg=S.cfg,pl=plan(cfg);
+  renderCards(cfg);
+  var al=$('#alert');
+  if(cfg.capital*pl.pf.pct<cfg.minEntrada){
+    al.hidden=false;
+    al.textContent='Com '+brl(cfg.capital)+' no perfil '+pl.pf.nome.toLowerCase()+', sua entrada E1 seria '+brl(cfg.capital*pl.pf.pct)+', abaixo do mínimo de '+brl(cfg.minEntrada)+' das corretoras. Você precisa de pelo menos '+brl(pl.dep)+' para operar neste perfil.';
+  }else al.hidden=true;
+  $('#plist').innerHTML=PROFILES.map(function(pf){
+    return '<button type="button" class="prow tone-'+pf.tone+'" data-prof="'+pf.id+'" aria-pressed="'+(pf.id===cfg.perfil)+'"><span class="ic" aria-hidden="true">'+pf.icon+'</span><span class="tx"><div class="nm">'+pf.nome+'</div><div class="sb">'+pf.sub+'</div></span><span class="pc">'+pcFmt(pf.pct)+'</span></button>';
+  }).join('');
+  $('#s-chances').textContent=pl.chances;
+  var livreP=cfg.modo!=='seq',rlp=real(cfg,S.ops),decided=rlp.wins+rlp.losses;
+  // Taxa automática: com 20 operações ou mais usa o seu acerto real; antes disso, a taxa de equilíbrio do payout.
+  var auto=decided>=20,qPct=auto?Math.round(rlp.wins/decided*100):Math.ceil(100/(1+cfg.payout/100)),q=Math.min(0.99,Math.max(0.01,qPct/100));
+  $('#s-unit').textContent=livreP?'chances disponíveis':'soros disponíveis';
+  $('#s-prob').textContent='Fecha o ciclo com '+Math.round(probLivre(q,pl.nLivre)*100)+'% no modo livre ('+pl.nLivre+' chances) ou '+Math.round(probSeq(q,pl.nSeq)*100)+'% em sequência ('+pl.nSeq+' soros), com '+qPct+'% de acerto ('+(auto?'seu resultado real no Diário':'equilíbrio do payout, até haver 20 operações')+').';
+  $('#s-obj-sessao').textContent='objetivo/sessão: '+brl(pl.objSessao);
+  $('#s-sessoes').textContent=pl.reach?pl.rows.length:'1500+';
+  $('#s-obj').textContent='objetivo: '+brl(cfg.objetivo);
+  $('#s-total').textContent=pl.reach?pl.rows.length:'1500+';
+  $('#s-prazo').textContent=cfg.dias;
+  $('#s-spd').textContent=pl.reach?pl.spd:'–';
+  $('#soros-hint').textContent=livreP?'cada chance ≈ ×'+pl.g.toFixed(2).replace('.',',')+' da anterior':'fator '+pl.r.toFixed(4).replace('.',',')+'× por soro';
+  $('#soros-head').innerHTML=livreP?'<th>Chance</th><th>Entrada</th><th>Risco acum.</th><th>Ao fechar</th>':'<th>Soro</th><th>E1</th><th>E2</th><th>Lucro WW</th><th>Risco acum.</th>';
+  $('#soros-body').innerHTML=pl.soros.length?pl.soros.map(function(s,i){
+    var last=i===pl.soros.length-1&&pl.soros.length>1;
+    if(livreP)return '<tr'+(last?' class="limit"':'')+'><td>'+(last?'💀 ':'')+'Chance '+s.n+'</td><td>'+brl(s.e)+'</td><td>'+brl(s.risco)+'</td><td class="'+(last?'':'p')+'">'+(i===0?'1º win':'+'+brl(pl.objSessao))+'</td></tr>';
+    return '<tr'+(last?' class="limit"':'')+'><td>'+(last?'💀 ':'')+'Soro '+s.n+'</td><td>'+brl(s.e1)+'</td><td>'+brl(s.e2)+'</td><td class="'+(last?'':'p')+'">+'+brl(s.lucro)+'</td><td>'+brl(s.risco)+'</td></tr>';
+  }).join(''):'<tr><td colspan="5" class="empty">Capital abaixo da entrada mínima. Aumente o capital ou escolha outro perfil.</td></tr>';
+  $('#prog-hint').textContent=pl.rows.length?'juros compostos · '+pcFmt(pl.pf.pct)+' recalculado a cada sessão':'';
+  $('#prog-body').innerHTML=pl.rows.length?pl.rows.map(function(r,i){
+    var end=i===pl.rows.length-1&&pl.reach;
+    return '<tr'+(end?' class="goal"':'')+'><td class="m">'+(end?'🏆 ':'')+r.s+'</td><td>'+brl(r.cap)+'</td><td class="g">'+brl(r.e1)+' ('+pcFmt(pl.pf.pct)+')</td><td>'+brl(r.e1)+'</td><td>'+brl(r.e2)+'</td><td class="p">+'+brl(r.luc)+'</td><td class="g">'+brl(r.fin)+'</td><td class="p">+'+(r.cres*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%</td></tr>';
+  }).join(''):'<tr><td colspan="8" class="empty">'+(cfg.objetivo<=cfg.capital?'O objetivo já é menor ou igual ao capital.':'Sem projeção para estes parâmetros.')+'</td></tr>';
+  $('#chart-plan').innerHTML=chartSVG(pl.rows,[],cfg);
+  return pl;
+}
+var editingCap=false;
+var ICON_UP='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>';
+var ICON_DOWN='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 7 6 6 4-4 8 8"/><path d="M15 17h6v-6"/></svg>';
+var ICON_RESET='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+function renderDiary(){
+  var cfg=S.cfg,pl=plan(cfg),rl=real(cfg,S.ops),cyc=rl.cyc,livre=cfg.modo!=='seq',tb=livre?cycleTableL(cfg,cyc.start):cycleTable(cfg,cyc.start),today=todayStr();
+  var N=tb.rows.length,noCap=N===0,exh=N>0&&(livre?cyc.k>=N:cyc.soro>N);
+  var z=0;
+  var tr=rl.rows.filter(function(x){return x.o.data===today&&x.i>=z});
+  var tw=0,tl=0,tp=0;
+  tr.forEach(function(x){if(x.o.res==='win')tw++;if(x.o.res==='loss')tl++;tp=r2(tp+x.pl)});
+  var conc=rl.done.filter(function(d){return d.d===today&&d.i>=z}).length;
+  var meta=pl.spd||1;
+  var rawDay=dayDiff(cfg.inicio,today)+1,Dp=Math.max(1,Math.round(cfg.dias));
+  var notStarted=rawDay<1,objDone=cfg.objetivo>cfg.capital&&rl.cap>=cfg.objetivo,dayDone=conc>=meta&&!notStarted;
+  var tomorrow=addDays(today,1);
+  var cnt={},okDays=0,k;
+  rl.done.forEach(function(d){cnt[d.d]=(cnt[d.d]||0)+1});
+  for(k=1;k<=Math.min(Dp,Math.max(0,rawDay));k++){if((cnt[addDays(cfg.inicio,k-1)]||0)>=meta)okDays++}
+
+  var capHtml=editingCap
+    ?'<input id="cap-edit" type="number" step="any" min="0" value="'+rl.cap+'" aria-label="Capital sob gestão">'
+    :'<span class="gd">'+brl(rl.cap)+'</span><button class="xbtn" type="button" data-editcap aria-label="Editar capital" title="Editar capital">✎</button>';
+  var opTxt=objDone?'Plano concluído':(dayDone?'Dia concluído':(notStarted?'Aguardando início':(noCap?'Capital insuficiente':(exh?'Ciclo esgotado':(livre?'Chance '+(cyc.k+1)+'/'+N+' · '+(cyc.wins?'2º win':'1º win'):'Soro '+cyc.soro+'/'+N+' · Fase '+cyc.fase)))));
+  $('#hud').innerHTML=
+    '<div><div class="lb">Capital sob gestão</div><div class="v">'+capHtml+'</div><div class="sm">inicial '+brl(cfg.capital)+'</div></div>'+
+    '<div><div class="lb">Operação atual</div><div class="v gd" style="font-size:19px">'+opTxt+'</div><div class="sm">Payout: '+cfg.payout+'%</div></div>'+
+    '<div><div class="lb">Wins / Losses</div><div class="v"><span class="pos">'+tw+'</span><span class="sep">/</span><span class="neg">'+tl+'</span></div><div class="sm '+(tp>=0?'pos':'neg')+'">'+signed(tp)+'</div></div>'+
+    '<div><div class="lb">Resultado do dia</div><div class="v '+(tp>=0?'pos':'neg')+'">'+signed(tp)+'</div><div class="sm">'+conc+' '+(conc===1?'sessão concluída':'sessões concluídas')+'</div></div>';
+  if(editingCap){var ce=$('#cap-edit');if(ce){ce.focus();ce.select()}}
+
+  var valor=0;
+  if(!noCap&&!exh){
+    if(livre)valor=nextL(tb,cyc);
+    else{var cur=tb.rows[cyc.soro-1];valor=cyc.fase==='E1'?cur.e1:cur.e2}
+  }
+  var poor=!noCap&&!exh&&valor>rl.cap;
+  var ICON_TROPHY='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>';
+  var bn=$('#daybanner'),locked=false,entry;
+  if(objDone){
+    bn.hidden=false;bn.className='banner';
+    bn.innerHTML='<div class="bi">'+ICON_TROPHY+'</div><div><h3>Parabéns! Objetivo final atingido</h3><p>Seu capital chegou a <b>'+brl(rl.cap)+'</b>, acima da meta de '+brl(cfg.objetivo)+'. O plano está concluído e as entradas ficam bloqueadas.</p></div>';
+  }else if(dayDone){
+    var lastDay=rawDay>=Dp;
+    bn.hidden=false;bn.className='banner';
+    bn.innerHTML='<div class="bi">'+ICON_TROPHY+'</div><div><h3>Parabéns! Meta do dia batida</h3><p>Você concluiu <b>'+conc+' de '+meta+' '+(meta===1?'sessão':'sessões')+'</b> hoje e fechou o dia em <b>'+signed(tp)+'</b>. '+(lastDay?'Este era o último dia do plano de '+Dp+' dias.':'Descanse e volte amanhã, '+fmtDay(tomorrow)+' (dia '+(rawDay+1)+' de '+Dp+'). As entradas de hoje estão bloqueadas.')+'</p></div>';
+  }else if(notStarted){
+    bn.hidden=false;bn.className='banner info';
+    bn.innerHTML='<div class="bi">'+ICON_TROPHY+'</div><div><h3>O plano começa em '+fmtDay(cfg.inicio)+'</h3><p>Faltam '+(1-rawDay)+' '+((1-rawDay)===1?'dia':'dias')+'. As entradas são liberadas na data de início.</p></div>';
+  }else bn.hidden=true;
+  if(objDone){locked=true;entry='<div class="entry done">Plano concluído. Sem novas entradas.</div>'}
+  else if(dayDone){locked=true;entry='<div class="entry done">Meta do dia batida. Próximas entradas: amanhã, '+fmtDay(tomorrow)+'.</div>'}
+  else if(notStarted){locked=true;entry='<div class="entry stop">Entradas liberadas a partir de '+fmtDay(cfg.inicio)+'.</div>'}
+  else if(noCap)entry='<div class="entry stop">Capital abaixo da entrada mínima para este perfil. Aumente o capital ou escolha um perfil com entrada maior.</div>';
+  else if(exh)entry='<div class="entry stop">Limite de '+N+' '+(livre?'chances':'soros')+' atingido. Resete o ciclo para recomeçar com o capital atual.</div>';
+  else if(poor){locked=true;entry='<div class="entry stop">Capital atual insuficiente para a próxima entrada de '+brl(valor)+'. Resete o ciclo ou aumente o capital.</div>'}
+  else entry='<div class="entry"><div><div class="lb">Valor a investir</div><div class="amt">'+brl(valor)+'</div></div><div class="side"><span class="badge">'+(livre?'Chance '+(cyc.k+1)+' — '+(cyc.wins?'2º WIN':'1º WIN'):'Soros '+cyc.soro+' — '+cyc.fase)+'</span><span class="hint">Payout: '+cfg.payout+'%</span></div></div>';
+  var dis=(locked||noCap||exh)?' disabled':'';
+  var body,head,note='';
+  if(livre){
+    var L=listL(tb,cyc,N),cum=0;
+    body=L.map(function(r,i){
+      cum+=r.v;
+      var now=r.kind==='now'&&!exh;
+      var st=r.kind==='past'?(r.res==='win'?'<td class="p" style="font-family:var(--body)">✓ Win</td>':'<td class="st-loss">✗ Loss</td>'):(now?'<td class="st-now">▶ '+(cyc.wins?'2º win':'1º win')+'</td>':'<td class="st-wait">Aguardando</td>');
+      return '<tr'+(now?' class="now"':'')+'><td class="m">'+(i+1)+'</td><td>'+brl(r.v)+'</td><td>'+brl(cum)+'</td>'+st+'</tr>';
+    }).join('');
+    head='<th>Chance</th><th>Entrada</th><th>Risco acum.</th><th>Status</th>';
+    note='<p class="foot">Qualquer 2 wins dentro das '+N+' chances fecham o ciclo com lucro de pelo menos '+brl(tb.obj)+', na ordem em que vierem. Depois do 1º win, as próximas entradas são recalculadas.</p>';
+  }else{
+    body=tb.rows.map(function(r,i){
+      var s=i+1,isNow=!exh&&s===cyc.soro,isPast=exh||s<cyc.soro;
+      var st=isNow?'<td class="st-now">▶ '+cyc.fase+'</td>':(isPast?'<td class="st-loss">✗ Loss</td>':'<td class="st-wait">Aguardando</td>');
+      return '<tr'+(isNow?' class="now"':'')+'><td class="m">'+s+'</td><td>'+brl(r.e1)+'</td><td>'+brl(r.e2)+'</td><td class="p">+'+brl(tb.obj)+'</td>'+st+'</tr>';
+    }).join('');
+    head='<th>Soro</th><th>Entrada 1 (E1)</th><th>Entrada 2 (E2)</th><th>Lucro Win-Win</th><th>Status</th>';
+  }
+  $('#cycle').innerHTML=entry+
+    '<div class="wl"><button type="button" class="win" data-act="win"'+dis+'><b>'+ICON_UP+'WIN</b><span>Operação positiva</span></button><button type="button" class="loss" data-act="loss"'+dis+'><b>'+ICON_DOWN+'LOSS</b><span>Operação negativa</span></button></div>'+
+    '<div class="ghostrow"><button type="button" class="ghost" data-act="reset">'+ICON_RESET+'Resetar ciclo</button><button type="button" class="ghost" data-act="undo"'+(S.ops.length?'':' disabled')+'>Desfazer última</button></div>'+
+    '<div class="sub">'+(livre?'Tabela de chances':'Tabela de soros')+'</div>'+
+    '<div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+
+    (body||'<tr><td colspan="5" class="empty">Sem entradas calculadas para este capital.</td></tr>')+'</tbody></table></div>'+note;
+
+  var dayN=Math.max(1,rawDay);
+  $('#m-date').textContent='Dia '+dayN+' de '+Dp+' · '+fmtDay(today)+'/'+today.slice(0,4);
+  $('#m-days').textContent=okDays+' de '+Dp+' dias concluídos no plano';
+  var rest=Math.max(0,meta-conc),pc=Math.min(100,Math.round(conc/meta*100));
+  $('#in-meta').textContent=meta;$('#m-conc').textContent=conc;$('#m-rest').textContent=rest;$('#m-meta').textContent=meta;
+  $('#m-bar').style.width=pc+'%';$('#m-txt').textContent=conc+' de '+meta+' '+(meta===1?'sessão':'sessões');$('#m-pct').textContent=pc+'%';
+  $('#pf-lbl').textContent=livre?'Chance':'Soro';
+  $('#pf-soro').textContent=noCap?'–':(exh?N+'/'+N:(livre?cyc.k+1:cyc.soro)+'/'+N);
+  $('#pf-w').textContent=cyc.w;$('#pf-l').textContent=cyc.l;$('#pf-obj').textContent=brl(tb.obj);
+
+  $('#chart-real').innerHTML=chartSVG(pl.rows,rl.curve,cfg);
+  $('#ops-body').innerHTML=rl.rows.length?rl.rows.slice().reverse().map(function(x){
+    var o=x.o;
+    return '<tr><td class="m">'+fmtDay(o.data)+'</td><td>'+(o.modo==='livre'?'C'+(o.k||''):'S'+x.soro+' · '+o.etapa)+'</td><td>'+brl(+o.valor)+'</td><td><span class="pill '+(o.res==='win'?'ok':(o.res==='loss'?'no':'mid'))+'">'+(o.res==='win'?'Win':(o.res==='loss'?'Loss':'Empate'))+'</span></td><td class="'+(x.pl>0?'p':(x.pl<0?'n':'m'))+'">'+signed(x.pl)+'</td><td class="g">'+brl(x.cap)+'</td><td><button class="xbtn" type="button" data-del="'+o.id+'" aria-label="Apagar operação">×</button></td></tr>';
+  }).join(''):'<tr><td colspan="7" class="empty">Nenhuma operação ainda. Use WIN ou LOSS na próxima entrada.</td></tr>';
+  renderDays(rl);
+}
+function renderCal(rl){
+  var cfg=S.cfg,meta=plan(cfg).spd||1,today=todayStr(),cnt={};
+  rl.done.forEach(function(d){cnt[d.d]=(cnt[d.d]||0)+1});
+  var D=Math.min(400,Math.max(1,Math.round(cfg.dias))),html='',ok=0,i;
+  for(i=1;i<=D;i++){
+    var ds=addDays(cfg.inicio,i-1),c=cnt[ds]||0,cls,st;
+    if(ds>today){cls='fut';st='Pendente'}
+    else if(c>=meta){cls='ok';st='Concluído';ok++}
+    else if(ds===today){cls='today';st='Hoje'}
+    else{cls='miss';st='Meta não batida'}
+    html+='<div class="dd dd-'+cls+'"'+(ds===today?' aria-current="date"':'')+'><div class="dn">Dia '+i+'</div><div class="dt">'+fmtDay(ds)+'</div><div class="dc">'+c+'/'+meta+'</div><div class="ds">'+st+'</div></div>';
+  }
+  $('#cal').innerHTML=html;
+  $('#cal-hint').textContent=ok+' de '+D+' dias concluídos · meta de '+meta+' '+(meta===1?'sessão':'sessões')+' por dia';
+}
+function renderDays(rl){
+  renderCal(rl);
+  var cfg=S.cfg,meta=cfg.dias>0?(cfg.objetivo-cfg.capital)/cfg.dias:0;
+  var map={},order=[];
+  rl.rows.forEach(function(x){
+    var d=x.o.data;
+    if(!map[d]){map[d]={d:d,n:0,w:0,l:0,pl:0,cap:0};order.push(d)}
+    var m=map[d];m.n++;if(x.o.res==='win')m.w++;if(x.o.res==='loss')m.l++;m.pl=r2(m.pl+x.pl);m.cap=x.cap;
+  });
+  order.sort();
+  $('#dias-hint').textContent=meta>0?'meta linear: '+brl(meta)+' por dia':'';
+  $('#dias-body').innerHTML=order.length?order.slice().reverse().map(function(d){
+    var m=map[d],ok=m.pl>=meta&&meta>0,neg=m.pl<0;
+    return '<tr><td class="m">'+fmtDay(d)+'</td><td>'+m.n+'</td><td class="p">'+m.w+'</td><td class="n">'+m.l+'</td><td class="'+(m.pl>0?'p':(m.pl<0?'n':'m'))+'">'+signed(m.pl)+'</td><td class="g">'+brl(m.cap)+'</td><td class="m">'+brl(meta)+'</td><td><span class="pill '+(neg?'no':(ok?'ok':'mid'))+'">'+(neg?'No prejuízo':(ok?'Meta batida':'Abaixo da meta'))+'</span></td></tr>';
+  }).join(''):'<tr><td colspan="8" class="empty">Os dias aparecem aqui conforme você registra operações no Diário.</td></tr>';
+}
+function renderAll(){
+  var c=S.cfg;
+  var set=function(id,v){var el=$(id);if(el&&document.activeElement!==el)el.value=v};
+  set('#in-capital',c.capital);set('#in-payout',c.payout);set('#in-objetivo',c.objetivo);set('#in-dias',c.dias);set('#in-min',c.minEntrada);set('#in-inicio',c.inicio);set('#in-modo',c.modo);
+  renderPlan();renderDiary();
+}
+function showTab(t){
+  tab=t;
+  ['plano','diario','dias'].forEach(function(k){
+    $('#p-'+k).hidden=k!==t;
+    $('#t-'+k).setAttribute('aria-selected',String(k===t));
+  });
+}
+
+/* ---------- eventos ---------- */
+function bindNum(id,key,min){
+  $(id).addEventListener('input',function(e){
+    var v=parseFloat(e.target.value);
+    if(!isFinite(v)||v<min)return;
+    S.cfg[key]=v;persist();renderPlan();renderDiary();
+  });
+}
+bindNum('#in-capital','capital',0);bindNum('#in-payout','payout',1);bindNum('#in-objetivo','objetivo',0);bindNum('#in-dias','dias',1);bindNum('#in-min','minEntrada',1);
+$('#in-inicio').addEventListener('input',function(e){if(e.target.value){S.cfg.inicio=e.target.value;persist();renderDiary()}});
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-tab]');if(t){showTab(t.dataset.tab);return}
+  var p=e.target.closest('[data-prof]');if(p){S.cfg.perfil=p.dataset.prof;persist();renderPlan();renderDiary();return}
+  var d=e.target.closest('[data-del]');if(d){S.ops=S.ops.filter(function(o){return o.id!==d.dataset.del});persist();renderDiary();return}
+  if(e.target.closest('#btn-start')){S.cfg.inicio=todayStr();$('#in-inicio').value=S.cfg.inicio;persist();renderDiary();showTab('diario');return}
+  var rs=e.target.closest('#btn-reset');
+  if(rs){
+    if(rs.dataset.armed==='1'){S.ops=[];persist();renderDiary();rs.dataset.armed='0';rs.textContent='Zerar diário'}
+    else{rs.dataset.armed='1';rs.textContent='Confirmar: apagar tudo';setTimeout(function(){rs.dataset.armed='0';rs.textContent='Zerar diário'},4000)}
+  }
+});
+function act(kind){
+  var cfg=S.cfg,rl=real(cfg,S.ops),cyc=rl.cyc,livre=cfg.modo!=='seq';
+  if(kind==='undo'){if(S.ops.length){S.ops.pop();persist();renderAll()}return}
+  if(kind==='reset'){S.ops.push({id:uid(),kind:'reset',data:todayStr()});persist();renderDiary();return}
+  if(livre){
+    var tl=cycleTableL(cfg,cyc.start),v=nextL(tl,cyc);
+    if(!v||v>rl.cap)return;
+    S.ops.push({id:uid(),data:todayStr(),etapa:'C'+(cyc.k+1),k:cyc.k+1,modo:'livre',valor:v,res:kind,payout:cfg.payout});
+  }else{
+    var tb=cycleTable(cfg,cyc.start),row=tb.rows[cyc.soro-1];
+    if(!row)return;
+    var val=cyc.fase==='E1'?row.e1:row.e2;
+    if(val>rl.cap)return;
+    S.ops.push({id:uid(),data:todayStr(),etapa:cyc.fase,valor:val,res:kind,payout:cfg.payout,soro:cyc.soro,modo:'seq'});
+  }
+  persist();renderDiary();
+}
+document.addEventListener('click',function(e){
+  var a=e.target.closest('[data-act]');if(a&&!a.disabled){act(a.dataset.act);return}
+  if(e.target.closest('[data-editcap]')){editingCap=true;renderDiary();return}
+});
+function applyCap(){
+  var el=$('#cap-edit');if(!el)return;
+  editingCap=false;
+  var v=parseFloat(el.value);
+  if(isFinite(v)&&v>=0){
+    var rl=real(S.cfg,S.ops);
+    S.cfg.capital=r2(v-(rl.cap-S.cfg.capital));
+    persist();renderAll();
+  }else renderDiary();
+}
+document.addEventListener('keydown',function(e){
+  if(e.target&&e.target.id==='cap-edit'){
+    if(e.key==='Enter'){e.preventDefault();applyCap()}
+    else if(e.key==='Escape'){editingCap=false;renderDiary()}
+  }
+});
+document.addEventListener('focusout',function(e){if(e.target&&e.target.id==='cap-edit'&&editingCap)applyCap()});
+function setModo(v){
+  if(v!=='livre'&&v!=='seq')return;
+  if(S.cfg.modo===v)return;
+  S.cfg.modo=v;
+  if(S.ops.length&&S.ops[S.ops.length-1].kind!=='reset')S.ops.push({id:uid(),kind:'reset',data:todayStr()});
+  persist();renderAll();
+}
+$('#in-modo').addEventListener('change',function(e){setModo(e.target.value)});
+
+
+var lastDay=todayStr();
+function checkDay(){if(todayStr()!==lastDay){lastDay=todayStr();renderDiary()}}
+setInterval(checkDay,30000);
+document.addEventListener('visibilitychange',checkDay);
+renderAll();
+initStore();
+})();
+</script>
+
+</body></html>
